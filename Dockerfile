@@ -1,13 +1,12 @@
-# Build stage
-FROM eclipse-temurin:22-jdk-jammy AS build
+# Build stage: Use a pre-built Maven image with JDK 21
+# (JDK 21 can compile Java 22 code perfectly fine)
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
-# Install Maven manually as native Maven images for JDK 22 are sometimes lagging
-RUN apt-get update && apt-get install -y maven
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Run stage
+# Run stage: Use JDK 22 to run the application
 FROM eclipse-temurin:22-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
